@@ -105,3 +105,29 @@ def inverse_prandtl_meyer(gamma: float, pran_ang: float, method: str) -> float:
 
     else:
         raise ValueError('Please enter either newton or composite')
+    
+def rad2deg(rad: float) -> float:
+    '''
+    Converts radians to degrees.
+
+    Args:
+        rad (float): angle in [rad]
+
+    Returns:
+        float: angle in [deg]
+    '''
+
+    return rad * 180 / np.pi
+
+def deg2rad(deg: float) -> float:
+    '''
+    Converts degrees to radians.
+
+    Args:
+        deg (float): angle in [deg]
+
+    Returns:
+        float: angle in [rad]
+    '''
+
+    return deg * np.pi / 180
