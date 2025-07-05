@@ -117,7 +117,7 @@ def MOC(z, theta_geometry, M0, P0, T0):
         else: #internal point
             if i > z:
                 axis_idx = max(j for j, idx in enumerate(axis) if idx <= i)
-                Q[i] = Q[i-axis_idx]    
+                Q[i] = Q[i-z+(axis_idx-1)]    
 
             R[i] = R[i-1]
             theta[i] = (Q[i] + R[i])/2
@@ -127,8 +127,8 @@ def MOC(z, theta_geometry, M0, P0, T0):
 
 
 
-z = 3
-theta_geometry = [13.19,0,0,0,13.19,0,0,5.397,0,0]
+z = 4
+theta_geometry = [13.19,0,0,0,0,9.8925,0,0,0,6.595,0,0,3.2975,0,0]
 nu,R,theta,Q = MOC(z, theta_geometry, 1.0, 1, 288)
 
 for i in range(len(nu)):
