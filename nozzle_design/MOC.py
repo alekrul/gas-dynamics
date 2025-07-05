@@ -1,4 +1,5 @@
 import numpy as np
+import nozzle_geometry as geometry
 
 def num_points(z):
     """
