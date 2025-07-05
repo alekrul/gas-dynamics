@@ -134,3 +134,8 @@ nu,R,theta,Q = MOC(z, theta_geometry, 1.0, 1, 288)
 
 for i in range(len(nu)):
     print(f"Point {i}: nu = {nu[i]:.4f}, R = {R[i]:.4f}, theta = {theta[i]:.4f}, Q = {Q[i]:.4f}")
+
+
+#preciso importar a geometria do nozzle, definir o contorno, calcular as coordenadas dos pontos, a reta de cada linha característica, e aí o ponto na parede vai ser a interseção
+# da reta do ponto anterior com o contorno do nozzle, com isso eu pego o theta e sigo o cálculo já implementado
+#a inicializacao deve pegar o theta do primeiro angulo na garganta
