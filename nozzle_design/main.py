@@ -5,7 +5,7 @@ import constants as const
 import MOC_gradual as moc
 import plot as plot
 
-z = 6
+z = 5
 x,y, A,throat_area, thetas, throat_location_x, throat_location_y = geometry.initialize_nozzle_geometry("nozzle_design/nozzle-geometry.csv")
 
 #theta_geometry = [13.19,0,0,0,0,9.8925,0,0,0,6.595,0,0,3.2975,0,0]

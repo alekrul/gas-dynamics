@@ -210,12 +210,10 @@ def MOC(z, x, y, A, theta_geometry):
             x_p[i], y_p[i] = calculate_x_axis_coordinates(C_minus[i], x_p[i-z], y_p[i-z])
         else:
             #internal point
-            print("internal point: ",i)
             Q[i] = Q[i-z]
-            R[i] = R[i-z-1]
+            R[i] = R[i-z+1]
             nu[i] = 0.5*(Q[i] + R[i])
             theta[i] = 0.5*(Q[i] - R[i])
-            print(nu[i])
             M[i] = eq.inverse_prandtl_meyer(const.GAMMA, nu[i], 'newton')
             mi[i] = eq.mach_angle(M[i])
             C_minus[i] = np.tan(((theta[i]+theta[i-z])/2)-((mi[i]+mi[i-z])/2))
