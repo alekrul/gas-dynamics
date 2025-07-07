@@ -41,7 +41,7 @@ def calculate_thetas(x, y):
     theta = np.arctan(dy_dx)
     return theta
 
-def calculate_throat_location(x, A):
+def calculate_throat_location(x,y, A):
     """
     Find the location of the throat in the nozzle geometry.
     
@@ -53,7 +53,7 @@ def calculate_throat_location(x, A):
     float: The x-coordinate of the throat location.
     """
     throat_index = np.argmin(A)
-    return x[throat_index]
+    return x[throat_index], y[throat_index]
 
 def get_only_divergent_section(x, y, throat_location, A):
     """
@@ -82,10 +82,8 @@ def initialize_nozzle_geometry(filename):
     """
     x, A, y = read_nozzle_geometry(filename)
     throat_area = calculate_throat_area(x, A)
-    throat_location = calculate_throat_location(x, A)
-    x, y, A = get_only_divergent_section(x, y, throat_location, A)
+    throat_location_x, throat_location_y = calculate_throat_location(x,y, A)
+    x, y, A = get_only_divergent_section(x, y, throat_location_x, A)
     thetas = calculate_thetas(x, y)
     
-    return x,y, throat_area, thetas, throat_location
-
-
+    return x,y, throat_area, thetas, throat_location_x, throat_location_y
