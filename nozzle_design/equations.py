@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.optimize import fsolve
 
 def newton_raphson(func, dfunc, root: float, n_max: int=100, tol: float=1e-11) -> tuple[float, int]:
     '''
@@ -131,3 +132,17 @@ def deg2rad(deg: float) -> float:
     '''
 
     return deg * np.pi / 180
+
+
+
+def area_mach_relation(M, area_ratio, gamma):
+    term1 = 1 / M**2
+    term2 = (2 / (gamma + 1)) * (1 + ((gamma - 1)/2) * M**2)
+    exponent = (gamma + 1) / (gamma - 1)
+    return term1 * term2**exponent - area_ratio**2
+
+def solve_mach(area_ratio, gamma=1.4, supersonic=True):
+    # Choose initial guess based on desired branch
+    M_guess = 2.0 if supersonic else 0.3
+    M_solution = fsolve(area_mach_relation, M_guess, args=(area_ratio, gamma))[0]
+    return M_solution

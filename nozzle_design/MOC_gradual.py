@@ -19,7 +19,7 @@ def num_points(z):
     
     return points
 
-def wall_indices(z):
+def wall_indices(z,points):
     """
     Calculate the indices of the wall points in the MOC based on the number of initial divisions.
 
@@ -31,13 +31,14 @@ def wall_indices(z):
     """
     indices = []
     indices.append(0)
-    for i in range(z):
-        ind = indices[i] + (z-i)+1
+    for i in range(points):
+        #ind = indices[i] + 2*z - 1 #<<< logica anterior
+        ind = indices[i] + 2*z
         indices.append(ind)
     
     return indices
 
-def axis_indices(z):
+def axis_indices(z,points):
     """
     Calculate the indices of the axis points in the MOC based on the number of initial divisions.
 
@@ -48,9 +49,10 @@ def axis_indices(z):
     list: A list of indices corresponding to the axis points.
     """
     indices = []
-    indices.append(1)
-    for i in range(z-1):
-        ind = indices[i] + (z-i)+1
+    indices.append(2*z-1)
+    for i in range(points):
+        #ind = indices[i] + 2*z -1
+        ind = indices[i] + 2*z
         indices.append(ind)
     
     return indices
@@ -72,7 +74,22 @@ def calculate_x_y_coordinates(tan1, tan2, x1, y1, x2, y2):
 
     return x_p, y_p
 
+def calculate_x_axis_coordinates(tan, x0, y0):
+    """
+    Calculate the x-coordinate of the point on the axis given a tangent and a point.
 
+    Parameters:
+    tan (float): The tangent of the angle at the point.
+    x0 (float): The x-coordinate of the point.
+    y0 (float): The y-coordinate of the point.
+
+    Returns:
+    float: The x-coordinate of the point on the axis.
+    """
+    # Solve for intersection with the x-axis: y = 0
+    x_axis = (-y0) / tan + x0
+
+    return x_axis, 0
 def find_intersection_with_contour(x_contour, y_contour, x0, y0, slope):
     """
     Find the intersection point of a line (defined by point x0, y0 and slope)
@@ -114,7 +131,7 @@ def find_intersection_with_contour(x_contour, y_contour, x0, y0, slope):
 
 
 
-def MOC(z, x, y, theta_geometry, M0, P0, T0):
+def MOC(z, x, y, A, theta_geometry):
     """
     Perform the Method of Characteristics (MOC) for a nozzle flow.
 
@@ -133,7 +150,7 @@ def MOC(z, x, y, theta_geometry, M0, P0, T0):
     tuple: Arrays containing the Mach number, pressure, and temperature at each point in the MOC.
     """
     
-    points = num_points(z)
+    points = len(x)*z 
     
     M = np.zeros(points)
     P = np.zeros(points)
@@ -149,89 +166,64 @@ def MOC(z, x, y, theta_geometry, M0, P0, T0):
     C_minus = np.zeros(points)
     C_plus = np.zeros(points)
 
-    # Initialize first point
-    M[0] = M0
-    P[0] = P0
-    T[0] = T0
-    x_p[0] = x[0]
-    y_p[0] = y[0]
-    
-    nu[0] = eq.prandtl_meyer(const.GAMMA, M[0])
-    mi[0] = eq.mach_angle(M[0])
-    theta[0] = theta_geometry[0]
-    
-    init_delta_theta = np.max(theta_geometry) / z
-    
-    wall = wall_indices(z)
-    axis = axis_indices(z)
-    # Calculate characteristics
-    for i in range(1, points):        
-        #initialize first points with Q from point 0
-        if i <= z:
-            Q[i] = 2*init_delta_theta*i
-        if i in axis:
-            theta[i] = 0 #theta is zero in the axis
-            if i == 1:
-                nu[i] = Q[i] #theta is zero so nu equal Q
-                R[i] = theta[i] - nu[i] #same to say that R is minus nu
-                M[i] = eq.inverse_prandtl_meyer(const.GAMMA, nu[i], 'newton') #calculate the Mach number from the Prandtl-Meyer angle
-                mi[i] = eq.mach_angle(M[i]) #calculate the Mach angle from the Mach number
-                C_plus[i] = 0
-                C_minus[i] = np.tan(((init_delta_theta*i)/2)-((mi[i]+eq.mach_angle(eq.inverse_prandtl_meyer(const.GAMMA,Q[i]/2,'newton')))/2)) 
-                x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], x[0], y[0], x[0], 0) #calculate the coordinates of the point
-            else:
-                axis_pos = axis.index(i) #this returns the position of the axis in the axis list
-                Q[i] = Q[axis[axis_pos-1]+1] #the Q value is the same as the previous axis point plus one
-                nu[i] = Q[i] #theta is zero so nu equal Q
-                R[i] = theta[i] - nu[i] #same to say that R is minus nu
-                M[i] = eq.inverse_prandtl_meyer(const.GAMMA, nu[i], 'newton') #calculate the Mach number from the Prandtl-Meyer angle
-                mi[i] = eq.mach_angle(M[i]) #calculate the Mach angle from the Mach number
-                C_plus[i] = 0
-                C_minus[i] = np.tan((theta[axis[axis_pos-1]+1]/2)-((mi[i]+mi[axis[axis_pos-1]+1])/2))
-                axis_pos = axis.index(i)
-                prev_axis_idx = axis[axis_pos - 1] if axis_pos > 0 else None
-                x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], x_p[axis[axis_pos-1]+1], y_p[axis[axis_pos-1]+1], x_p[prev_axis_idx], y_p[prev_axis_idx]) #calculate the coordinates of the point
-        elif i in wall:
-            #theta[i] = theta_geometry[i] #rever esse aqui, pois não necessariamente o angulo do indice da parece é o mesmo da localizacao que estou analizando
-            c_plus = np.tan(theta[i-1] + mi[i-1]) 
-            x_p[i], y_p[i], theta[i] = find_intersection_with_contour(x, y, x_p[i-1], y_p[i-1], c_plus)
-            R[i] = R[i-1]
+    # Initialize first points
+    initial_A_ratio = A[1] / A[0]
+    M0 = eq.solve_mach(initial_A_ratio, const.GAMMA)
+    y_div = y[1]/(z)
+    delta_theta = theta_geometry[1]/(z) #<<<<<<
+    for i in range(z):
+        M[i] = M0
+        
+        x_p[i] = x[1]
+        y_p[i] = y[1] - (i * y_div)
+        nu[i] = eq.prandtl_meyer(const.GAMMA, M[i])
+        mi[i] = eq.mach_angle(M[i])
+        theta[i] = theta_geometry[1] - (delta_theta * i)   # theta is zero in the axis
+        R[i] = theta[i] - nu[i] 
+        Q[i] = nu[i] + theta[i]
+        C_minus[i] = np.tan(theta[i] - mi[i])
+        C_plus[i] = np.tan(theta[i] + mi[i])
+        print(f"i: {i}, x_p[i]: {x_p[i]}, y_p[i]: {y_p[i]}, theta[i]: {theta[i]}, nu[i]: {nu[i]}, mi[i]: {mi[i]}, R[i]:{R[i]}, Q[i]:{Q[i]} C_minus[i]: {C_minus[i]}, C_plus[i]: {C_plus[i]}")
+
+    for i in range(z, points):
+        if x_p[i-1] >= x[-1]:
+            break
+        print(f"i: {i-1}, x_p[i]: {x_p[i-1]}, y_p[i]: {y_p[i-1]}, theta[i]: {theta[i-1]}, nu[i]: {nu[i-1]}, mi[i]: {mi[i-1]}, C_minus[i]: {C_minus[i-1]}, C_plus[i]: {C_plus[i-1]}")
+        if i in wall_indices(z, points):
+            # Wall point
+            c_plus = np.tan(theta[i-z] + mi[i-z]) #testar com o C_plus[i-z+1]
+            print(f"i: {i}, z: {z}, x_p[i-z]: {x_p[i-z]}, y_p[i-z]: {y_p[i-z]}, c_plus: {c_plus}, [i-z]: {[i-z]}")
+            x_p[i], y_p[i], theta[i] = find_intersection_with_contour(x, y, x_p[i-z], y_p[i-z], c_plus)
+            R[i] = R[i-z]
             nu[i] = theta[i] - R[i]
             Q[i] = theta[i] + nu[i]
             M[i] = eq.inverse_prandtl_meyer(const.GAMMA, nu[i], 'newton')
             mi[i] = eq.mach_angle(M[i])
             C_minus[i] = 0
-            #wall_pos = wall.index(i)
-            #if wall_pos == 0: #first wall point
-            #    C_plus[i] = np.tan((theta[i]+theta[i-1])/2 + ((mi[i]+mi[i-1])/2))
-            #    x_p[i], y_p[i] = calculate_x_y_coordinates((theta[i]+theta[0])/2, C_plus[i], x[0], y[0], x_p[i-1], y_p[i-1])
-            #else:
-            #    prev_wall_idx = wall[wall_pos - 1] if wall_pos > 0 else None
-            #    C_plus[i] = np.tan((theta[i]+theta[i-1])/2 + ((mi[i]+mi[i-1])/2))
-            #    x_p[i], y_p[i] = calculate_x_y_coordinates((theta[i]+theta[prev_wall_idx])/2, C_plus[i], x_p[prev_wall_idx], y_p[prev_wall_idx], x_p[i-1], y_p[i-1])
-            
-        else: #internal point
-            if i > z:
-                axis_idx = max(j for j, idx in enumerate(axis) if idx <= i)
-                Q[i] = Q[i-z+(axis_idx-1)]    
-
-            R[i] = R[i-1]
-            theta[i] = (Q[i] + R[i])/2
-            nu[i] = Q[i] - theta[i]
+            C_plus[i] = 0
+        elif i in axis_indices(z,points):
+            #Axis point
+            theta[i] = 0
+            Q[i] = Q[i-z]
+            nu[i] = Q[i]
+            R[i] = theta[i] - nu[i]
             M[i] = eq.inverse_prandtl_meyer(const.GAMMA, nu[i], 'newton')
             mi[i] = eq.mach_angle(M[i])
-            C_plus[i] = np.tan((theta[i]+theta[i-1])/2 + ((mi[i]+mi[i-1])/2))
-            if i <=z:
-                C_minus[i] = np.tan((init_delta_theta*i)/2 - ((mi[i]+eq.mach_angle(eq.inverse_prandtl_meyer(const.GAMMA,Q[i]/2,'newton')))/2))
-                x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], x[0], y[0],x_p[i-1], y_p[i-1])
-            else:
-                C_minus[i] = np.tan((theta[i]+theta[i-z+(axis_idx-1)])/2 - ((mi[i]+mi[i-z+(axis_idx-1)])/2))
-                x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], x_p[i-z+(axis_idx-1)], y_p[i-z+(axis_idx-1)],x_p[i-1], y_p[i-1])
+            C_minus[i] = np.tan((theta[i-z]/2)-((mi[i]+mi[i-z])/2))
+            C_plus[i] = np.tan((theta[i-z]/2)+((mi[i]+mi[i-z])/2))
+            x_p[i], y_p[i] = calculate_x_axis_coordinates(C_minus[i], x_p[i-z], y_p[i-z])
+        else:
+            #internal point
+            print("internal point: ",i)
+            Q[i] = Q[i-z]
+            R[i] = R[i-z-1]
+            theta[i] = 0.5*(Q[i] + R[i])
+            nu[i] = Q[i] - theta[i]
+            print(nu[i])
+            M[i] = eq.inverse_prandtl_meyer(const.GAMMA, nu[i], 'newton')
+            mi[i] = eq.mach_angle(M[i])
+            C_minus[i] = np.tan(((theta[i]+theta[i-z])/2)-((mi[i]+mi[i-z])/2))
+            C_plus[i] = np.tan(((theta[i]+theta[i-z+1])/2)+((mi[i]+mi[i-z+1])/2))
+            x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], x_p[i-z], y_p[i-z], x_p[i-z+1], y_p[i-z+1])
             
     return nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus
-
-
-
-#preciso importar a geometria do nozzle, definir o contorno, calcular as coordenadas dos pontos, a reta de cada linha característica, e aí o ponto na parede vai ser a interseção
-# da reta do ponto anterior com o contorno do nozzle, com isso eu pego o theta e sigo o cálculo já implementado
-#a inicializacao deve pegar o theta do primeiro angulo na garganta

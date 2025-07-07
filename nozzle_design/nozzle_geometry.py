@@ -86,4 +86,4 @@ def initialize_nozzle_geometry(filename):
     x, y, A = get_only_divergent_section(x, y, throat_location_x, A)
     thetas = calculate_thetas(x, y)
     
-    return x,y, throat_area, thetas, throat_location_x, throat_location_y
+    return x,y,A, throat_area, thetas, throat_location_x, throat_location_y
