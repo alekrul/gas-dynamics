@@ -148,7 +148,6 @@ def MOC(z, x, y, theta_geometry, M0, P0, T0):
                 C_minus[i] = np.tan((theta[axis[axis_pos-1]+1]/2)-((mi[i]+mi[axis[axis_pos-1]+1])/2))
                 axis_pos = axis.index(i)
                 prev_axis_idx = axis[axis_pos - 1] if axis_pos > 0 else None
-                print(f"Actual wall point: {i}, Axis position: {axis_pos}, Previous axis index: {prev_axis_idx}")
                 x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], x_p[axis[axis_pos-1]+1], y_p[axis[axis_pos-1]+1], x_p[prev_axis_idx], y_p[prev_axis_idx]) #calculate the coordinates of the point
         elif i in wall:
             theta[i] = theta_geometry[i] #rever esse aqui, pois não necessariamente o angulo do indice da parece é o mesmo da localizacao que estou analizando
@@ -165,7 +164,7 @@ def MOC(z, x, y, theta_geometry, M0, P0, T0):
             else:
                 prev_wall_idx = wall[wall_pos - 1] if wall_pos > 0 else None
                 C_plus[i] = np.tan((theta[i]+theta[i-1])/2 + ((mi[i]+mi[i-1])/2))
-                x_p[i], y_p[i] = calculate_x_y_coordinates((theta[i]+theta[wall_pos-1])/2, C_plus[i], x_p[wall_pos-1], y_p[wall_pos-1], x_p[i-1], y_p[i-1])
+                x_p[i], y_p[i] = calculate_x_y_coordinates((theta[i]+theta[prev_wall_idx])/2, C_plus[i], x_p[prev_wall_idx], y_p[prev_wall_idx], x_p[i-1], y_p[i-1])
             
         else: #internal point
             if i > z:
@@ -180,25 +179,13 @@ def MOC(z, x, y, theta_geometry, M0, P0, T0):
             C_plus[i] = np.tan((theta[i]+theta[i-1])/2 + ((mi[i]+mi[i-1])/2))
             if i <=z:
                 C_minus[i] = np.tan((init_delta_theta*i)/2 - ((mi[i]+eq.mach_angle(eq.inverse_prandtl_meyer(const.GAMMA,Q[i]/2,'newton')))/2))
-                x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], y[0], x[0],x_p[i-1], y_p[i-1])
+                x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], x[0], y[0],x_p[i-1], y_p[i-1])
             else:
                 C_minus[i] = np.tan((theta[i]+theta[i-z+(axis_idx-1)])/2 - ((mi[i]+mi[i-z+(axis_idx-1)])/2))
-                x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], y_p[i-z+(axis_idx-1)], x_p[i-z+(axis_idx-1)],x_p[i-1], y_p[i-1])
+                x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], x_p[i-z+(axis_idx-1)], y_p[i-z+(axis_idx-1)],x_p[i-1], y_p[i-1])
             
     return nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus
 
-
-
-z = 4
-theta_geometry = [13.19,0,0,0,0,9.8925,0,0,0,6.595,0,0,3.2975,0,0]
-for i in range(len(theta_geometry)):
-    theta_geometry[i] = np.deg2rad(theta_geometry[i])  # Convert angles to radians
-x = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-y = [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus = MOC(z, x, y, theta_geometry, 1.0, 1, 288)
-
-for i in range(len(nu)):
-    print(f"Point {i}: nu = {nu[i]:.4f}, R = {R[i]:.4f}, theta = {theta[i]:.4f}, Q = {Q[i]:.4f}, M = {M[i]:.4f}, mi = {mi[i]:.4f}, x_p = {x_p[i]:.4f}, y_p = {y_p[i]:.4f}, C_minus = {C_minus[i]:.4f}, C_plus = {C_plus[i]:.4f}")
 
 
 #preciso importar a geometria do nozzle, definir o contorno, calcular as coordenadas dos pontos, a reta de cada linha característica, e aí o ponto na parede vai ser a interseção
