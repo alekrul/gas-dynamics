@@ -147,7 +147,7 @@ def MOC(z, x, y, A, theta_geometry):
     Returns:
     tuple: Arrays containing the Mach number, pressure, and temperature at each point in the MOC.
     """
-    points = 2*len(x)*(z+1)
+    points = len(x)*(z**2)
     
     M = np.zeros(points)
     P = np.zeros(points)
@@ -176,27 +176,33 @@ def MOC(z, x, y, A, theta_geometry):
         nu[i] = eq.prandtl_meyer(const.GAMMA, M[i])
         mi[i] = eq.mach_angle(M[i])
         theta[i] = theta_geometry[1] - (delta_theta * i)   # theta is zero in the axis
-        R[i] = theta[i] - nu[i] 
+        R[i] = nu[i] - theta[i] 
         Q[i] = nu[i] + theta[i]
         C_minus[i] = np.tan(theta[i] - mi[i])
         C_plus[i] = np.tan(theta[i] + mi[i])
-        print(f"i: {i}, x_p[i]: {x_p[i]}, y_p[i]: {y_p[i]}, theta[i]: {theta[i]}, nu[i]: {nu[i]}, mi[i]: {mi[i]}, R[i]:{R[i]}, Q[i]:{Q[i]} C_minus[i]: {C_minus[i]}, C_plus[i]: {C_plus[i]}")
 
     for i in range(z, points):
         
-        print(f"i: {i-1}, x_p[i]: {x_p[i-1]}, y_p[i]: {y_p[i-1]}, theta[i]: {theta[i-1]}, nu[i]: {nu[i-1]}, mi[i]: {mi[i-1]}, C_minus[i]: {C_minus[i-1]}, C_plus[i]: {C_plus[i-1]}")
+        #print(f"i: {i-1}, x_p[i]: {x_p[i-1]}, y_p[i]: {y_p[i-1]}, theta[i]: {theta[i-1]}, nu[i]: {nu[i-1]}, mi[i]: {mi[i-1]}, C_minus[i]: {C_minus[i-1]}, C_plus[i]: {C_plus[i-1]}")
         if i in wall_indices(z, points):
             # Wall point
-            c_plus = np.tan(theta[i-z+1] + mi[i-z+1]) #testar com o C_plus[i-z+1]
-            print(f"i: {i}, z: {z}, x_p[i-z+1]: {x_p[i-z+1]}, y_p[i-z+1]: {y_p[i-z+1]}, c_plus: {c_plus}, [i-z+1]: {[i-z+1]}")
-            x_p[i], y_p[i], theta[i] = find_intersection_with_contour(x, y, x_p[i-z+1], y_p[i-z+1], c_plus)
-            R[i] = R[i-z+1]
-            nu[i] = theta[i] + R[i]
-            Q[i] = theta[i] + nu[i]
-            M[i] = eq.inverse_prandtl_meyer(const.GAMMA, nu[i], 'newton')
-            mi[i] = eq.mach_angle(M[i])
-            C_minus[i] = 0
-            C_plus[i] = 0
+            c_plus = np.tan(theta[i-z+1] + mi[i-z+1]) 
+            diff = 1.0
+            max_iterations = 100
+            iteration = 0
+            while abs(diff) > 1e-6 and iteration < max_iterations:
+                x_p[i], y_p[i], theta[i] = find_intersection_with_contour(x, y, x_p[i-z+1], y_p[i-z+1], c_plus)
+                R[i] = R[i-z+1]
+                nu[i] = theta[i] + R[i]
+                Q[i] = theta[i] + nu[i]
+                M[i] = eq.inverse_prandtl_meyer(const.GAMMA, nu[i], 'newton')
+                mi[i] = eq.mach_angle(M[i])
+                C_minus[i] = 0 
+                C_plus[i] = np.tan(((theta[i-z+1]+theta[i])/2)+((mi[i-z+1]+mi[i])/2)) #<<<talvez eu tenha que fazer um método iterativo até minimizar a diferença entre C_plus[i] e C_minus[i]
+                diff = C_plus[i] - c_plus
+                c_plus= C_plus[i]
+                iteration += 1
+            
         elif i in axis_indices(z,points):
             #Axis point
             theta[i] = 0
@@ -219,7 +225,7 @@ def MOC(z, x, y, A, theta_geometry):
             C_minus[i] = np.tan(((theta[i]+theta[i-z])/2)-((mi[i]+mi[i-z])/2))
             C_plus[i] = np.tan(((theta[i]+theta[i-z+1])/2)+((mi[i]+mi[i-z+1])/2))
             x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], x_p[i-z], y_p[i-z], x_p[i-z+1], y_p[i-z+1])
-        if x_p[i-1] >= x[-1]:
+        if x_p[i] >= x[-1]:
             break
     # Remove unused points
     mask = M != 0
@@ -234,3 +240,7 @@ def MOC(z, x, y, A, theta_geometry):
     C_minus = C_minus[mask]
     C_plus = C_plus[mask]
     return nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus
+
+
+
+#<<<<revisar o calculo de x_p e y_p

@@ -70,20 +70,34 @@ def get_only_divergent_section(x, y, throat_location, A):
     throat_index = np.where(x == throat_location)[0][0]
     return x[throat_index:], y[throat_index:], A[throat_index:]
 
-def initialize_nozzle_geometry(filename):
+def initialize_nozzle_geometry(filename, extra_points=0, x_increment=1.0):
     """
-    Initialize the nozzle geometry from a file.
+    Initialize the nozzle geometry from a file and optionally add extra points to the contour.
     
     Parameters:
     filename (str): The name of the file containing the nozzle geometry data.
+    extra_points (int): Number of additional points to add at the end of the nozzle.
+    x_increment (float): Increment for x for each additional point.
     
     Returns:
-    tuple: x-coordinates and cross-sectional areas of the nozzle.
+    tuple: x-coordinates, y-coordinates, areas, throat area, thetas, throat x, throat y.
     """
     x, A, y = read_nozzle_geometry(filename)
     throat_area = calculate_throat_area(x, A)
-    throat_location_x, throat_location_y = calculate_throat_location(x,y, A)
+    throat_location_x, throat_location_y = calculate_throat_location(x, y, A)
     x, y, A = get_only_divergent_section(x, y, throat_location_x, A)
     thetas = calculate_thetas(x, y)
-    
-    return x,y,A, throat_area, thetas, throat_location_x, throat_location_y
+
+    if extra_points > 0:
+        last_x = x[-1]
+        last_y = y[-1]
+        last_A = A[-1]
+        new_x = np.linspace(last_x + x_increment, last_x + x_increment * extra_points, extra_points)
+        new_y = np.full(extra_points, last_y)
+        new_A = np.full(extra_points, last_A)
+        x = np.concatenate([x, new_x])
+        y = np.concatenate([y, new_y])
+        A = np.concatenate([A, new_A])
+        thetas = calculate_thetas(x, y)
+
+    return x, y, A, throat_area, thetas, throat_location_x, throat_location_y
