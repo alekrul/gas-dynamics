@@ -147,7 +147,7 @@ def MOC(z, x, y, A, theta_geometry):
     Returns:
     tuple: Arrays containing the Mach number, pressure, and temperature at each point in the MOC.
     """
-    points = len(x)*(z+1)
+    points = 2*len(x)*(z+1)
     
     M = np.zeros(points)
     P = np.zeros(points)
@@ -223,4 +223,16 @@ def MOC(z, x, y, A, theta_geometry):
             x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], x_p[i-z], y_p[i-z], x_p[i-z+1], y_p[i-z+1])
         if x_p[i-1] >= x[-1]:
             break
+    # Remove unused points
+    mask = M != 0
+    nu = nu[mask]
+    R = R[mask]
+    theta = theta[mask]
+    Q = Q[mask]
+    M = M[mask]
+    mi = mi[mask]
+    x_p = x_p[mask]
+    y_p = y_p[mask]
+    C_minus = C_minus[mask]
+    C_plus = C_plus[mask]
     return nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus
