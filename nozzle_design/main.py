@@ -2,7 +2,7 @@ import numpy as np
 import nozzle_geometry as geometry
 import equations as eq
 import constants as const
-import MOC as moc
+import nozzle_design.MOC_min_length as moc
 import plot as plot
 
 z = 50
@@ -14,7 +14,7 @@ x,y, throat_area, thetas, throat_location_x, throat_location_y = geometry.initia
 #x = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 #y = [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus = moc.MOC(z, x, y, thetas, 1.0, 1, 288)
+nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus = moc.MOC_min_length(z, x, y, thetas, 1.0, 1, 288)
 
 for i in range(len(nu)):
     print(f"Point {i}: nu = {nu[i]:.4f}, R = {R[i]:.4f}, theta = {theta[i]:.4f}, Q = {Q[i]:.4f}, M = {M[i]:.4f}, mi = {mi[i]:.4f}, x_p = {x_p[i]:.4f}, y_p = {y_p[i]:.4f}, C_minus = {C_minus[i]:.4f}, C_plus = {C_plus[i]:.4f}")
