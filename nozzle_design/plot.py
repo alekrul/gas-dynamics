@@ -58,3 +58,36 @@ def plot_nozzle_and_points(x, y, x_p, y_p):
     ax.grid(True)
     plt.tight_layout()
     return plt
+
+def plot_mach_distribution(x, y, x_p, y_p, mach):
+    """
+    Plots the Mach number distribution along the nozzle using a colormap.
+
+    Parameters:
+    x (list): x-coordinates of the nozzle contour.
+    y (list): y-coordinates of the nozzle contour.
+    x_p (list): x-coordinates where Mach numbers are defined.
+    y_p (list): y-coordinates where Mach numbers are defined.
+    mach (list): Mach numbers at each (x_p, y_p) location.
+    """
+    if len(x) != len(y):
+        raise ValueError("x and y must have the same length")
+    if len(x_p) != len(y_p) or len(x_p) != len(mach):
+        raise ValueError("x_p, y_p, and mach must have the same length")
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    # Plot nozzle contour
+    ax.plot(x, y, label='Nozzle Contour', color='tab:blue', linewidth=2, zorder=2)
+    # Scatter Mach numbers with colormap
+    sc = ax.scatter(x_p, y_p, c=mach, cmap='viridis', vmin=1, vmax=max(mach), s=40, zorder=3)
+    # Colorbar
+    cbar = plt.colorbar(sc, ax=ax, pad=0.02)
+    cbar.set_label('Mach Number')
+    # Labels and title
+    ax.set_xlabel('x (mm)')
+    ax.set_ylabel('y (mm)')
+    ax.set_title('Mach Number Distribution Along Nozzle')
+    ax.legend()
+    ax.grid(True)
+    plt.tight_layout()
+    return plt

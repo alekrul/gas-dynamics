@@ -32,8 +32,7 @@ def wall_indices(z,points):
     indices = []
     indices.append(0)
     for i in range(points):
-        #ind = indices[i] + 2*z - 1 #<<< logica anterior
-        ind = indices[i] + 2*z
+        ind = indices[i] + 2*z - 1
         indices.append(ind)
     
     return indices
@@ -49,10 +48,9 @@ def axis_indices(z,points):
     list: A list of indices corresponding to the axis points.
     """
     indices = []
-    indices.append(2*z-1)
+    indices.append(z-1)
     for i in range(points):
-        #ind = indices[i] + 2*z -1
-        ind = indices[i] + 2*z
+        ind = indices[i] + 2*z -1
         indices.append(ind)
     
     return indices
@@ -149,8 +147,7 @@ def MOC(z, x, y, A, theta_geometry):
     Returns:
     tuple: Arrays containing the Mach number, pressure, and temperature at each point in the MOC.
     """
-    
-    points = len(x)*z 
+    points = len(x)*(z+1)
     
     M = np.zeros(points)
     P = np.zeros(points)
@@ -169,8 +166,8 @@ def MOC(z, x, y, A, theta_geometry):
     # Initialize first points
     initial_A_ratio = A[1] / A[0]
     M0 = eq.solve_mach(initial_A_ratio, const.GAMMA)
-    y_div = y[1]/(z)
-    delta_theta = theta_geometry[1]/(z) #<<<<<<
+    y_div = y[1]/(z-1)
+    delta_theta = theta_geometry[1]/(z-1) #<<<<<<
     for i in range(z):
         M[i] = M0
         
@@ -186,16 +183,15 @@ def MOC(z, x, y, A, theta_geometry):
         print(f"i: {i}, x_p[i]: {x_p[i]}, y_p[i]: {y_p[i]}, theta[i]: {theta[i]}, nu[i]: {nu[i]}, mi[i]: {mi[i]}, R[i]:{R[i]}, Q[i]:{Q[i]} C_minus[i]: {C_minus[i]}, C_plus[i]: {C_plus[i]}")
 
     for i in range(z, points):
-        if x_p[i-1] >= x[-1]:
-            break
+        
         print(f"i: {i-1}, x_p[i]: {x_p[i-1]}, y_p[i]: {y_p[i-1]}, theta[i]: {theta[i-1]}, nu[i]: {nu[i-1]}, mi[i]: {mi[i-1]}, C_minus[i]: {C_minus[i-1]}, C_plus[i]: {C_plus[i-1]}")
         if i in wall_indices(z, points):
             # Wall point
-            c_plus = np.tan(theta[i-z] + mi[i-z]) #testar com o C_plus[i-z+1]
-            print(f"i: {i}, z: {z}, x_p[i-z]: {x_p[i-z]}, y_p[i-z]: {y_p[i-z]}, c_plus: {c_plus}, [i-z]: {[i-z]}")
-            x_p[i], y_p[i], theta[i] = find_intersection_with_contour(x, y, x_p[i-z], y_p[i-z], c_plus)
-            R[i] = R[i-z]
-            nu[i] = theta[i] - R[i]
+            c_plus = np.tan(theta[i-z+1] + mi[i-z+1]) #testar com o C_plus[i-z+1]
+            print(f"i: {i}, z: {z}, x_p[i-z+1]: {x_p[i-z+1]}, y_p[i-z+1]: {y_p[i-z+1]}, c_plus: {c_plus}, [i-z+1]: {[i-z+1]}")
+            x_p[i], y_p[i], theta[i] = find_intersection_with_contour(x, y, x_p[i-z+1], y_p[i-z+1], c_plus)
+            R[i] = R[i-z+1]
+            nu[i] = theta[i] + R[i]
             Q[i] = theta[i] + nu[i]
             M[i] = eq.inverse_prandtl_meyer(const.GAMMA, nu[i], 'newton')
             mi[i] = eq.mach_angle(M[i])
@@ -206,7 +202,7 @@ def MOC(z, x, y, A, theta_geometry):
             theta[i] = 0
             Q[i] = Q[i-z]
             nu[i] = Q[i]
-            R[i] = theta[i] - nu[i]
+            R[i] = nu[i] - theta[i]
             M[i] = eq.inverse_prandtl_meyer(const.GAMMA, nu[i], 'newton')
             mi[i] = eq.mach_angle(M[i])
             C_minus[i] = np.tan((theta[i-z]/2)-((mi[i]+mi[i-z])/2))
@@ -217,13 +213,14 @@ def MOC(z, x, y, A, theta_geometry):
             print("internal point: ",i)
             Q[i] = Q[i-z]
             R[i] = R[i-z-1]
-            theta[i] = 0.5*(Q[i] + R[i])
-            nu[i] = Q[i] - theta[i]
+            nu[i] = 0.5*(Q[i] + R[i])
+            theta[i] = 0.5*(Q[i] - R[i])
             print(nu[i])
             M[i] = eq.inverse_prandtl_meyer(const.GAMMA, nu[i], 'newton')
             mi[i] = eq.mach_angle(M[i])
             C_minus[i] = np.tan(((theta[i]+theta[i-z])/2)-((mi[i]+mi[i-z])/2))
             C_plus[i] = np.tan(((theta[i]+theta[i-z+1])/2)+((mi[i]+mi[i-z+1])/2))
             x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], x_p[i-z], y_p[i-z], x_p[i-z+1], y_p[i-z+1])
-            
+        if x_p[i-1] >= x[-1]:
+            break
     return nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus
