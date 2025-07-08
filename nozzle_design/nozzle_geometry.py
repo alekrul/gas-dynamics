@@ -26,7 +26,7 @@ def calculate_throat_area(x, A):
     """
     return np.min(A)
 
-def calculate_thetas(x, y):
+def calculate_thetas(x, y, method='iterative'):
     """
     Calculate the angles of the nozzle at each point.
     
@@ -37,8 +37,15 @@ def calculate_thetas(x, y):
     Returns:
     array: The angles of the nozzle at each point.
     """
-    dy_dx = np.gradient(y, x)
-    theta = np.arctan(dy_dx)
+    if method == 'gradient':
+        dy_dx = np.gradient(y, x)
+        theta = np.arctan(dy_dx)
+    else:
+        theta = np.zeros(len(x))
+        for i in range (1, len(x)-1):
+            if x[i] != x[i-1]:
+            
+                theta[i] = np.arctan((y[i] - y[i-1]) / (x[i] - x[i-1]))
     return theta
 
 def calculate_throat_location(x,y, A):
@@ -98,6 +105,8 @@ def initialize_nozzle_geometry(filename, extra_points=0, x_increment=1.0):
         x = np.concatenate([x, new_x])
         y = np.concatenate([y, new_y])
         A = np.concatenate([A, new_A])
-        thetas = calculate_thetas(x, y)
+        thetas = calculate_thetas(x, y, method='gradient') 
 
     return x, y, A, throat_area, thetas, throat_location_x, throat_location_y
+
+x,y, A,throat_area, thetas, throat_location_x, throat_location_y = initialize_nozzle_geometry("nozzle_design/nozzle-geometry.csv", 10, 3)
