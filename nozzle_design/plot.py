@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
+from scipy.interpolate import griddata
+
 
 def plot_nozzle_contour(x, y):
     """
@@ -89,5 +91,48 @@ def plot_mach_distribution(x, y, x_p, y_p, mach):
     ax.set_title('Mach Number Distribution Along Nozzle')
     ax.legend()
     ax.grid(True)
+    plt.tight_layout()
+    return plt
+
+
+def plot_mach_heatmap_interpolated(x, y, x_p, y_p, mach, resolution=300):
+    """
+    Plota um heatmap interpolado da distribuição de Mach ao longo do bocal.
+
+    Parameters:
+    - x, y: coordenadas da parede do bocal
+    - x_p, y_p: coordenadas dos pontos MOC
+    - mach: valores de Mach nos pontos
+    - resolution: resolução da malha de interpolação (quanto maior, mais suave)
+    """
+    # Gera malha regular no domínio dos pontos
+    xi = np.linspace(min(x_p), max(x_p), resolution)
+    yi = np.linspace(min(y_p), max(y_p), resolution)
+    Xi, Yi = np.meshgrid(xi, yi)
+
+    # Interpolação dos dados de Mach para a malha regular
+    Mi = griddata((x_p, y_p), mach, (Xi, Yi), method='linear', fill_value=np.nan)
+
+    # Cria o gráfico
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    # Plota o heatmap interpolado
+    mask = ~np.isnan(Mi)
+    cmap = plt.get_cmap('viridis')
+    c = ax.contourf(Xi, Yi, Mi, levels=100, cmap=cmap)
+    
+    # Adiciona o contorno do bocal
+    ax.plot(x, y, color='white', linewidth=2, label="Nozzle Contour")
+
+    # Adiciona a barra de cores
+    cbar = plt.colorbar(c, ax=ax)
+    cbar.set_label('Mach Number')
+
+    # Labels e formatação
+    ax.set_xlabel('x (mm)')
+    ax.set_ylabel('y (mm)')
+    ax.set_title('Interpolated Mach Number Distribution (Heatmap)')
+    ax.legend()
+    ax.set_aspect('equal')
     plt.tight_layout()
     return plt

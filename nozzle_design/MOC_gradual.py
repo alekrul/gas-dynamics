@@ -162,7 +162,7 @@ def MOC(z, x, y, A, theta_geometry):
     y_p =  np.zeros(points)
     C_minus = np.zeros(points)
     C_plus = np.zeros(points)
-
+ 
     # Initialize first points
     initial_A_ratio = A[1] / A[0]
     M0 = eq.solve_mach(initial_A_ratio, const.GAMMA)
