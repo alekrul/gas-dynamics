@@ -8,7 +8,7 @@ import plot as plot
 z = 5
 x,y, A,throat_area, thetas, throat_location_x, throat_location_y = geometry.initialize_nozzle_geometry("nozzle_design/nozzle-geometry.csv", 10, 3)
 
-nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus = moc.MOC(z, x, y, A, thetas, 1, 288)
+nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus, P, T = moc.MOC(z, x, y, A, thetas, 1, 288)
 
 for i in range(len(nu)):
     print(f"Point {i}: nu = {nu[i]:.4f}, R = {R[i]:.4f}, theta = {theta[i]:.4f}, Q = {Q[i]:.4f}, M = {M[i]:.4f}, mi = {mi[i]:.4f}, x_p = {x_p[i]:.4f}, y_p = {y_p[i]:.4f}, C_minus = {C_minus[i]:.4f}, C_plus = {C_plus[i]:.4f}")
@@ -17,5 +17,11 @@ for i in range(len(nu)):
 plt = plot.plot_mach_distribution(x, y, x_p[:-1], y_p[:-1], M[:-1])
 plt.show()
 
-plt = plot.plot_mach_heatmap_interpolated(x, y, x_p[:-1], y_p[:-1], M[:-1])
+plt = plot.plot_data_heatmap_interpolated(x, y, x_p[:-1], y_p[:-1], M[:-1], 300, "Mach Number", "Interpolated Mach Number Distribution (Heatmap)")
+plt.show()
+
+plt = plot.plot_data_heatmap_interpolated(x, y, x_p[:-1], y_p[:-1], T[:-1],300, "Temperature", "Interpolated Temperature Distribution (Heatmap)")
+plt.show()
+
+plt = plot.plot_data_heatmap_interpolated(x, y, x_p[:-1], y_p[:-1], P[:-1],300, "Pressure", "Interpolated Pressure Distribution (Heatmap)")
 plt.show()

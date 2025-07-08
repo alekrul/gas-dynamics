@@ -95,7 +95,7 @@ def plot_mach_distribution(x, y, x_p, y_p, mach):
     return plt
 
 
-def plot_mach_heatmap_interpolated(x, y, x_p, y_p, mach, resolution=300):
+def plot_data_heatmap_interpolated(x, y, x_p, y_p, data, resolution=300, label = "Mach number",title="Interpolated Mach Number Distribution (Heatmap)"):
     """
     Plota um heatmap interpolado da distribuição de Mach ao longo do bocal.
 
@@ -111,7 +111,7 @@ def plot_mach_heatmap_interpolated(x, y, x_p, y_p, mach, resolution=300):
     Xi, Yi = np.meshgrid(xi, yi)
 
     # Interpolação dos dados de Mach para a malha regular
-    Mi = griddata((x_p, y_p), mach, (Xi, Yi), method='linear', fill_value=np.nan)
+    Mi = griddata((x_p, y_p), data, (Xi, Yi), method='linear', fill_value=np.nan)
 
     # Cria o gráfico
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -126,12 +126,12 @@ def plot_mach_heatmap_interpolated(x, y, x_p, y_p, mach, resolution=300):
 
     # Adiciona a barra de cores
     cbar = plt.colorbar(c, ax=ax)
-    cbar.set_label('Mach Number')
+    cbar.set_label(label)
 
     # Labels e formatação
     ax.set_xlabel('x (mm)')
     ax.set_ylabel('y (mm)')
-    ax.set_title('Interpolated Mach Number Distribution (Heatmap)')
+    ax.set_title(title)
     ax.legend()
     ax.set_aspect('equal')
     plt.tight_layout()

@@ -247,7 +247,9 @@ def MOC(z, x, y, A, theta_geometry, p0, T0):
     y_p = y_p[mask]
     C_minus = C_minus[mask]
     C_plus = C_plus[mask]
-    return nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus
+    P = P[mask]
+    T = T[mask]
+    return nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus, P, T
 
 
 
