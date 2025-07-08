@@ -133,7 +133,11 @@ def deg2rad(deg: float) -> float:
 
     return deg * np.pi / 180
 
+def p0_p(gamma, M):
+    return (1 + ((gamma - 1) / 2) * M**2)**(gamma / (gamma - 1))
 
+def T0_T(gamma, M):
+    return (1 + ((gamma - 1) / 2) * M**2)
 
 def area_mach_relation(M, area_ratio, gamma):
     term1 = 1 / M**2

@@ -129,7 +129,7 @@ def find_intersection_with_contour(x_contour, y_contour, x0, y0, slope):
 
 
 
-def MOC(z, x, y, A, theta_geometry):
+def MOC(z, x, y, A, theta_geometry, p0, T0):
     """
     Perform the Method of Characteristics (MOC) for a nozzle flow.
 
@@ -180,6 +180,8 @@ def MOC(z, x, y, A, theta_geometry):
         Q[i] = nu[i] + theta[i]
         C_minus[i] = np.tan(theta[i] - mi[i])
         C_plus[i] = np.tan(theta[i] + mi[i])
+        P[i] = p0/eq.p0_p(const.GAMMA, M[i])
+        T[i] = T0/eq.T0_T(const.GAMMA, M[i])
 
     for i in range(z, points):
         
@@ -197,6 +199,8 @@ def MOC(z, x, y, A, theta_geometry):
                 Q[i] = theta[i] + nu[i]
                 M[i] = eq.inverse_prandtl_meyer(const.GAMMA, nu[i], 'newton')
                 mi[i] = eq.mach_angle(M[i])
+                P[i] = p0/eq.p0_p(const.GAMMA, M[i])
+                T[i] = T0/eq.T0_T(const.GAMMA, M[i])
                 C_minus[i] = 0 
                 C_plus[i] = np.tan(((theta[i-z+1]+theta[i])/2)+((mi[i-z+1]+mi[i])/2)) #<<<talvez eu tenha que fazer um método iterativo até minimizar a diferença entre C_plus[i] e C_minus[i]
                 diff = C_plus[i] - c_plus
@@ -214,6 +218,8 @@ def MOC(z, x, y, A, theta_geometry):
             C_minus[i] = np.tan((theta[i-z]/2)-((mi[i]+mi[i-z])/2))
             C_plus[i] = np.tan((theta[i-z]/2)+((mi[i]+mi[i-z])/2))
             x_p[i], y_p[i] = calculate_x_axis_coordinates(C_minus[i], x_p[i-z], y_p[i-z])
+            P[i] = p0/eq.p0_p(const.GAMMA, M[i])
+            T[i] = T0/eq.T0_T(const.GAMMA, M[i])
         else:
             #internal point
             Q[i] = Q[i-z]
@@ -225,6 +231,8 @@ def MOC(z, x, y, A, theta_geometry):
             C_minus[i] = np.tan(((theta[i]+theta[i-z])/2)-((mi[i]+mi[i-z])/2))
             C_plus[i] = np.tan(((theta[i]+theta[i-z+1])/2)+((mi[i]+mi[i-z+1])/2))
             x_p[i], y_p[i] = calculate_x_y_coordinates(C_minus[i], C_plus[i], x_p[i-z], y_p[i-z], x_p[i-z+1], y_p[i-z+1])
+            P[i] = p0/eq.p0_p(const.GAMMA, M[i])
+            T[i] = T0/eq.T0_T(const.GAMMA, M[i])
         if x_p[i] >= x[-1]:
             break
     # Remove unused points
