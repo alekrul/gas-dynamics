@@ -114,7 +114,7 @@ def plot_data_heatmap_interpolated(x, y, x_p, y_p, data, resolution=300, label =
     Mi = griddata((x_p, y_p), data, (Xi, Yi), method='linear', fill_value=np.nan)
 
     # Cria o gráfico
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 8))
     
     # Plota o heatmap interpolado
     mask = ~np.isnan(Mi)
@@ -133,6 +133,6 @@ def plot_data_heatmap_interpolated(x, y, x_p, y_p, data, resolution=300, label =
     ax.set_ylabel('y (mm)')
     ax.set_title(title)
     ax.legend()
-    ax.set_aspect('equal')
+    ax.set_aspect(3)
     plt.tight_layout()
     return plt

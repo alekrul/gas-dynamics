@@ -17,11 +17,11 @@ for i in range(len(nu)):
 plt = plot.plot_mach_distribution(x, y, x_p[:-1], y_p[:-1], M[:-1])
 plt.show()
 
-plt = plot.plot_data_heatmap_interpolated(x, y, x_p[:-1], y_p[:-1], M[:-1], 300, "Mach Number", "Interpolated Mach Number Distribution (Heatmap)")
+plt = plot.plot_data_heatmap_interpolated(x, y, x_p[:-1], y_p[:-1], M[:-1],600, "Mach Number", "Interpolated Mach Number Distribution (Heatmap)")
 plt.show()
 
 plt = plot.plot_data_heatmap_interpolated(x, y, x_p[:-1], y_p[:-1], T[:-1],300, "Temperature", "Interpolated Temperature Distribution (Heatmap)")
 plt.show()
 
-plt = plot.plot_data_heatmap_interpolated(x, y, x_p[:-1], y_p[:-1], P[:-1],300, "Pressure", "Interpolated Pressure Distribution (Heatmap)")
+plt = plot.plot_data_heatmap_interpolated(x, y, x_p[:-1], y_p[:-1], P[:-1],600, "Pressure", "Interpolated Pressure Distribution (Heatmap)")
 plt.show()
