@@ -11,7 +11,7 @@ x,y, A,throat_area, thetas, throat_location_x, throat_location_y = geometry.init
 nu, R, theta, Q, M, mi, x_p, y_p, C_minus, C_plus, P, T = moc.MOC(z, x, y, A, thetas, 0.9433, 297.65)
 
 for i in range(len(nu)):
-    print(f"Point {i}: nu = {nu[i]:.4f}, R = {R[i]:.4f}, theta = {theta[i]:.4f}, Q = {Q[i]:.4f}, M = {M[i]:.4f}, mi = {mi[i]:.4f}, x_p = {x_p[i]:.4f}, y_p = {y_p[i]:.4f}, C_minus = {C_minus[i]:.4f}, C_plus = {C_plus[i]:.4f}")
+    print(f"Point {i}: x_p = {x_p[i]:.4f}, y_p = {y_p[i]:.4f}, \n\u03BD = {nu[i]:.4f}, R = {R[i]:.4f}, Q = {Q[i]:.4f}, \u03B8 = {theta[i]:.4f},  M = {M[i]:.4f}, \u03BC\u1D62 = {mi[i]:.4f}, p = {P[i]} C_minus = {C_minus[i]:.4f}, C_plus = {C_plus[i]:.4f}")
 
 
 plt = plot.plot_mach_distribution(x, y, x_p[:-1], y_p[:-1], M[:-1])
