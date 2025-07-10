@@ -185,7 +185,6 @@ def MOC(z, x, y, A, theta_geometry, p0, T0):
 
     for i in range(z, points):
         
-        #print(f"i: {i-1}, x_p[i]: {x_p[i-1]}, y_p[i]: {y_p[i-1]}, theta[i]: {theta[i-1]}, nu[i]: {nu[i-1]}, mi[i]: {mi[i-1]}, C_minus[i]: {C_minus[i-1]}, C_plus[i]: {C_plus[i-1]}")
         if i in wall_indices(z, points):
             # Wall point
             c_plus = np.tan(theta[i-z+1] + mi[i-z+1]) 
