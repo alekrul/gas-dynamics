@@ -3,6 +3,7 @@ import nozzle_geometry as geometry
 import equations as eq
 import constants as const
 import plot as plot
+import csv
 
 x,y, A,throat_area, thetas, throat_location_x, throat_location_y = geometry.initialize_nozzle_geometry("nozzle_design/nozzle-geometry.csv", 10, 3, only_divergent=False)
 
@@ -30,3 +31,9 @@ plt.show()
 
 plt = plot.plot_quasi1D_heatmap(x, y, y_lower, 1/P0_P, resolution=400, title="Quasi-1D P/P0 Heatmap", label="P/P0")
 plt.show()
+
+with open("profile_quasi1d.csv", "w", newline="") as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(["x","y","P/P0" ,"P", "M"])
+    for xi, yi, P0_Pi, Pi, Mi in zip(x, y, P0_P, P, M):
+        writer.writerow([xi, yi, 1/P0_Pi, Pi, Mi])
