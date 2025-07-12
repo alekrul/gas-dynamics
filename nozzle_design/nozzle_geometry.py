@@ -77,7 +77,7 @@ def get_only_divergent_section(x, y, throat_location, A):
     throat_index = np.where(x == throat_location)[0][0]
     return x[throat_index:], y[throat_index:], A[throat_index:]
 
-def initialize_nozzle_geometry(filename, extra_points=0, x_increment=1.0):
+def initialize_nozzle_geometry(filename, extra_points=0, x_increment=1.0, only_divergent=True):
     """
     Initialize the nozzle geometry from a file and optionally add extra points to the contour.
     
@@ -92,7 +92,8 @@ def initialize_nozzle_geometry(filename, extra_points=0, x_increment=1.0):
     x, A, y = read_nozzle_geometry(filename)
     throat_area = calculate_throat_area(x, A)
     throat_location_x, throat_location_y = calculate_throat_location(x, y, A)
-    x, y, A = get_only_divergent_section(x, y, throat_location_x, A)
+    if only_divergent:
+        x, y, A = get_only_divergent_section(x, y, throat_location_x, A)
     thetas = calculate_thetas(x, y)
 
     if extra_points > 0:
